@@ -1,0 +1,14 @@
+{
+    "name": "lth",
+    "cloud_provider": "gcp",
+    "docker_config": {
+        "root_setup_script": "docker/root_setup.sh",
+        "user_setup_script": "docker/user_setup.sh",
+        "posthoc_setup_script": "docker/posthoc_setup.sh"
+    },
+    "gcp_config": {
+        "project": "carbingroup",
+        "zone": "us-central1-a"
+    },
+    "extra_sync_files": ["private-key.json"]
+}
