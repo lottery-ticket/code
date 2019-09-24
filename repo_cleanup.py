@@ -39,7 +39,7 @@ call([
     'git remote add origin https://github.com/comparing-rewinding-finetuning/comparing-rewinding-codebase.git',
     'git config user.name "Anonymous ICLR Submission"',
     'git config user.email "anonymous@example.com"',
-    # 'git pull origin master',
+    'git pull origin master',
 ])
 
 files = sorted(subprocess.check_output(['git', 'ls-files'], cwd=DIRNAME, universal_newlines=True).strip().split('\n'))
