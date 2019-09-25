@@ -481,16 +481,16 @@ register_cmap(cmap=ListedColormap(
 
 def usability_implot(iters, name, is_iterative, show=True, savename=None,
                      bars_to_show=['horizontal', 'vertical', 'finetune'],
-                     zones_to_show=['Safe', 'Ideal', 'Fine-tuning Plateau'],
+                     zones_to_show=['Safe', 'Dominant', 'Fine-tuning Plateau'],
 ):
-    real_xs, safes, ideals, ft_deltas = get_zones(iters, name, is_iterative, just_get_data=True)
+    real_xs, safes, dominants, ft_deltas = get_zones(iters, name, is_iterative, just_get_data=True)
     cmap_lim = 0.005
     norm = MidpointNormalize(midpoint=0, vmin=-cmap_lim, vmax=cmap_lim)
     cmap = matplotlib.cm.get_cmap('bwr')
 
     for (zone, ztype) in ([
             (safes, 'Safe'),
-            (ideals, 'Ideal'),
+            (dominants, 'Dominant'),
             (ft_deltas, 'Fine-tuning Plateau'),
     ]):
         if ztype.lower() not in [z.lower() for z in zones_to_show]:
@@ -512,7 +512,7 @@ def usability_implot(iters, name, is_iterative, show=True, savename=None,
             for j, diff in enumerate(z[-4]):
                 C[i, j] = diff
 
-        all_xs = np.array(ideals[0][-2])
+        all_xs = np.array(dominants[0][-2])
 
         plt.imshow(C[::-1, :], cmap=cmap, aspect='auto')
         ax.invert_yaxis()
@@ -541,7 +541,10 @@ def usability_implot(iters, name, is_iterative, show=True, savename=None,
                     np.arange(len(real_xs)),
                     2 - real_xs
                 )
-                x = (1 + (self.zone is ft_deltas)) - x
+                if self.zone is ft_deltas:
+                    x = 2 - x
+                else:
+                    x = x
                 return super().__call__(x, i)
 
         ax.xaxis.set_major_locator(ticker.FixedLocator(np.linspace(0, len(zone[0][-2]), 10)))
@@ -968,7 +971,7 @@ def get_zones(iters, name, is_iterative,
 
 
     safes = []
-    ideals = []
+    dominants = []
     ft_deltas = []
     real_xs = []
 
@@ -1048,13 +1051,13 @@ def get_zones(iters, name, is_iterative,
 
         if plotter <= 1:
             safes.append(foo(m_d, s_d))
-            ideals.append(foo(m_d, i_d))
+            dominants.append(foo(m_d, i_d))
         ft_deltas.append(foo(s_d, i_d))
 
     real_xs = np.array(real_xs)
 
     if just_get_data:
-        return real_xs, safes, ideals, ft_deltas
+        return real_xs, safes, dominants, ft_deltas
 
     m = {
         'resnet20': 2,
@@ -1091,15 +1094,15 @@ def get_zones(iters, name, is_iterative,
         return filtit([i for i in range(len(real_xs)) if z[i][0] > 0 and z[i][3] >= 1 and z[i][4] >= 1
         ])
     safe_idxs = getit(safes)
-    ideal_idxs = getit(ideals)
+    dominant_idxs = getit(dominants)
 
     safe_xs = [real_xs[i] for i in range(len(real_xs)) if safes[i][-1] != -1]
-    ideal_xs = [real_xs[i] for i in range(len(real_xs)) if ideals[i][-1] != -1]
+    dominant_xs = [real_xs[i] for i in range(len(real_xs)) if dominants[i][-1] != -1]
 
     plt.figure()
-    plt.title('Safe and Ideal Zones: {}'.format(fullname))
+    plt.title('Safe and Dominant Zones: {}'.format(fullname))
     plt.plot(safe_xs, [s[-1] for s in safes if s[-1] != -1], 'o--', label='Safe Zone')
-    plt.plot(ideal_xs, [s[-1] for s in ideals if s[-1] != -1], 'o--', label='Ideal Zone')
+    plt.plot(dominant_xs, [s[-1] for s in dominants if s[-1] != -1], 'o--', label='Dominant Zone')
     plt.yscale('log')
     plt.gca().set_yticks([])
     plt.xlim(0, 1)
@@ -1115,9 +1118,9 @@ def get_zones(iters, name, is_iterative,
     return
 
 
-    # plt.title('Safe and Ideal Zones')
+    # plt.title('Safe and Dominant Zones')
     # plt.plot(real_xs[safe_idxs], [idx for _ in range(len(safe_idxs))], 'x:', color='k', label='Safe Zone')
-    # plt.plot(real_xs[ideal_idxs], [idx for _ in range(len(ideal_idxs))], 'o-', color='k', label='Ideal Zone')
+    # plt.plot(real_xs[dominant_idxs], [idx for _ in range(len(dominant_idxs))], 'o-', color='k', label='Dominant Zone')
 
     # if m[name] * 2 + int(bool(is_iterative)) == 4:
     #     plt.legend()
