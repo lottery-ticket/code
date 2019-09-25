@@ -311,7 +311,7 @@ def get_color(name):
 
 def labof(expt):
     if 'lottery' in expt:
-        return 'Rewind-Replay'
+        return 'Rewind'
     elif 'finetune' in expt:
         return 'Fine-tune'
     elif 'reinit' in expt:
@@ -496,9 +496,12 @@ def usability_implot(iters, name, is_iterative, show=True, savename=None,
         if ztype.lower() not in [z.lower() for z in zones_to_show]:
             continue
         fig, ax = plt.subplots()
-        plt.title('{} {} Points, {} pruning'.format(
+        plt.title('{} {}, {} pruning'.format(
             netname(name),
-            ztype,
+            {
+                'Safe': 'Rewinding Safety',
+                'Dominant': 'Rewinding Dominance',
+            }.get(ztype, ztype),
             'Iterative' if is_iterative else 'One-shot',
         ))
 
@@ -949,7 +952,7 @@ def get_zones(iters, name, is_iterative,
                 )
 
             if expt == lname:
-                label = 'Rewind to {:.0%}, replay {:.0%}'.format(
+                label = 'Rewind to {:.0%}, retrain {:.0%}'.format(
                     1 - plotter, plotter,
                 ).replace('%', r'\%')
             else:
