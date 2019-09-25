@@ -952,7 +952,7 @@ def get_zones(iters, name, is_iterative,
                 )
 
             if expt == lname:
-                label = 'Rewind to {:.0%}, retrain {:.0%}'.format(
+                label = 'Rewind to {:.0%}, re-train {:.0%}'.format(
                     1 - plotter, plotter,
                 ).replace('%', r'\%')
             else:
